@@ -113,3 +113,4 @@ Basta abrir o arquivo e clicar em **Send Request** em cada um dos cenários pré
 ## 📄 Licença
 
 Este projeto foi desenvolvido para fins de estudo e prática de arquitetura de software e APIs REST com Node.js e TypeScript.
+
