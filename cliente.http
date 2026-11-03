@@ -1,0 +1,125 @@
+@baseUrl = http://localhost:3333
+
+# Cole aqui o ID de um produto retornado no GET /products:
+@productId = c4df2693-0e86-4f7d-bb62-0e2ec3132ef2
+
+### 1. Health Check (Ping)
+GET {{baseUrl}}/ping
+
+###
+
+### 2. Listar todos os produtos
+GET {{baseUrl}}/products
+
+###
+
+### 3. Listar produtos com filtros (Categoria e Faixa de Preço)
+GET {{baseUrl}}/products?category=Eletrônicos&minPrice=100&maxPrice=300
+
+###
+
+### 4. Buscar produto por ID
+GET {{baseUrl}}/products/21d6720a-9d24-4637-a52d-3da918786efd
+
+###
+
+### 5. Cadastrar novo produto (com cálculo automático de isAvailable)
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "Mouse Gamer RGB",
+  "description": "Mouse óptico ergonômico com 6 botões configuráveis",
+  "price": 129.90,
+  "category": "Eletrônicos",
+  "stockQuantity": 20
+}
+
+###
+
+### 6. Cadastrar novo produto com estoque zerado (isAvailable deve ser false)
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "Monitor UltraWide 29",
+  "description": "Monitor IPS 75Hz com resolução Full HD",
+  "price": 1250.00,
+  "category": "Eletrônicos",
+  "stockQuantity": 0
+}
+
+###
+
+### 7. Teste de Validação Zod com Erro (POST inválido -> Deve retornar 400 Bad Request)
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "A",
+  "description": "Ops",
+  "price": -10,
+  "category": "Inexistente",
+  "stockQuantity": -5
+}
+
+###
+
+### 8. Atualizar dados do produto (PUT -> Altera preço e nome)
+PUT {{baseUrl}}/products/9155b151-38d3-4f77-bbc8-d208d5de4403
+Content-Type: application/json
+
+{
+  "name": "Teclado Mecânico RGB Pro",
+  "price": 279.90
+}
+
+###
+
+### 9. Atualizar estoque - Entrada/Adicionar itens (PATCH -> Deve retornar 200 OK)
+PATCH {{baseUrl}}/products/9155b151-38d3-4f77-bbc8-d208d5de4403/stock
+Content-Type: application/json
+
+{
+  "quantity": 10
+}
+
+###
+
+### 10. Atualizar estoque - Saída/Subtrair itens (PATCH -> Deve retornar 200 OK)
+PATCH {{baseUrl}}/products/9155b151-38d3-4f77-bbc8-d208d5de4403/stock
+Content-Type: application/json
+
+{
+  "quantity": -5
+}
+
+###
+
+### 11. Atualizar estoque com erro de regra de negócio (PATCH -> Deve retornar 400 - Estoque insuficiente)
+PATCH {{baseUrl}}/products/9155b151-38d3-4f77-bbc8-d208d5de4403/stock
+Content-Type: application/json
+
+{
+  "quantity": -9999
+}
+
+###
+
+### 12. Atualizar estoque com erro de validação (PATCH -> Deve retornar 400 - Quantidade zero não permitida)
+PATCH {{baseUrl}}/products/9155b151-38d3-4f77-bbc8-d208d5de4403/stock
+Content-Type: application/json
+
+{
+  "quantity": 0
+}
+
+###
+
+### 13. Deletar produto (DELETE -> Deve retornar 204 No Content)
+DELETE {{baseUrl}}/products/3c7749ad-7e2f-4bcc-956b-b40f2c7f5291
+
+###
+
+### 14. Teste de produto não encontrado após exclusão (GET -> Deve retornar 404 Not Found)
+GET {{baseUrl}}/products/3c7749ad-7e2f-4bcc-956b-b40f2c7f5291
