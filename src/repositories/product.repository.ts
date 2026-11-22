@@ -7,53 +7,25 @@ import type {
     ListProductsQuery
 } from '../schemas/product.schema.js'
 
-// Nossa "tabela" em memória. Tem 2 produtos pré-cadastrados para facilitar os testes
-const products: Product[] = [
-    {
-        id: randomUUID(),
-        name: 'Teclado Mecânico RGB',
-        description: 'Teclado mecânico compacto com switches azuis e iluminação LED',
-        price: 250.00,
-        category: 'Eletrônicos',
-        stockQuantity: 15,
-        isAvailable: true,
-    },
-    {
-        id: randomUUID(),
-        name: 'O Programador Pragmático',
-        description: 'Guia prático sobre boas práticas na engenharia de software',
-        price: 89.90,
-        category: 'Livros',
-        stockQuantity: 0,
-        isAvailable: false,
-    },
-    {
-        id: randomUUID(),
-        name: 'Cadeira de Escritório Ergonômica',
-        description: 'Cadeira giratória com suporte lombar e ajuste de altura',
-        price: 650.00,
-        category: 'Móveis',
-        stockQuantity: 5,
-        isAvailable: true,
-    },
-]
+import type { IProductRepository } from './product.repository.interface.js'
 
+export class InMemoryProductRepository implements IProductRepository {
+    private products: Product[] = []
 
-export const productRepository = {
     /**
     * 1. Lista produtos, aplicando filtros opcionais se fornecidos
     */
-    findAll(query?: ListProductsQuery): Product[] {
-        let result = [...products]
+    async findAll(query?: ListProductsQuery): Promise<Product[]> {
+        let result = [...this.products]
 
         if (!query) {
             return result
         }
 
-        const { category, minPrice, maxPrice } = query
+        const { categoryId, minPrice, maxPrice } = query
 
-        if (category) {
-            result = result.filter((product) => product.category === query.category)
+        if (categoryId) {
+            result = result.filter((product) => product.categoryId === query.categoryId)
         }
 
         if (minPrice !== undefined) {
@@ -64,81 +36,88 @@ export const productRepository = {
             result = result.filter((product) => product.price <= maxPrice)
         }
 
-        return result
-    },
+        const page = query.page ?? 1
+        const limit = query.limit ?? 10
+        const skip = (page - 1) * limit
+
+        return result.slice(skip, skip + limit)
+    }
     /**
     * 2. Busca um produto pelo ID
     */
-    findByID(id: string): Product | undefined {
-        return products.find((product) => product.id === id)
-    },
+    async findById(id: string): Promise<Product | null> {
+        return this.products.find((product) => product.id === id) ?? null
+    }
 
     /**
    * 3. Cria um novo produto gerando o UUID automaticamente
    */
-    create(data: CreateProductDTO): Product {
+    async create(data: CreateProductDTO): Promise<Product> {
+        const stockQuantity = data.stockQuantity ?? 0
         const newProduct: Product = {
             id: randomUUID(),
             ...data,
-            isAvailable: data.isAvailable ?? data.stockQuantity > 0,
+            stockQuantity,
+            isAvailable: data.isAvailable ?? stockQuantity > 0,
         }
-
-        products.push(newProduct)
+        this.products.push(newProduct)
         return newProduct
-    },
+    }
 
     /**
     * 4. Atualiza os dados de um produto existente. Retorna null se não encontrar.
     */
-    update(id: string, data: UpdateProductDTO): Product | null {
-        const index = products.findIndex((product) => product.id === id)
+    async update(id: string, data: UpdateProductDTO): Promise<Product | null> {
+        const index = this.products.findIndex((product) => product.id === id)
         if (index === -1) {
             return null
         }
 
         // Mescla os dados antigos com os novos que o usuário enviou
         const updatedProduct: Product = {
-            ...products[index],
+            ...this.products[index],
             ...data,
-                isAvailable: data.isAvailable ??
+            isAvailable: data.isAvailable ??
                 (data.stockQuantity !== undefined
                     ? data.stockQuantity > 0
-                    : products[index].isAvailable
+                    : this.products[index].isAvailable
                 ),
         }
 
-        products[index] = updatedProduct
+        this.products[index] = updatedProduct
         return updatedProduct
-    },
+    }
 
     /**
 * 5. Atualiza apenas o estoque (adicionar ou subtrair itens).
 */
-    updateStock(id: string, quantity: number): Product | null {
-        const index = products.findIndex((product) => product.id === id)
+    async updateStock(id: string, data: UpdateStockDTO): Promise<Product | null> {
+        const index = this.products.findIndex((product) => product.id === id)
         if (index === -1) {
             return null
         }
-
-        const newStock = products[index].stockQuantity + quantity
+        const newStock =
+            data.type === 'IN'
+                ? this.products[index].stockQuantity + data.quantity
+                : this.products[index].stockQuantity - data.quantity
         if (newStock < 0) {
             throw new Error('Estoque insuficiente para esta operação')
         }
 
-        products[index].stockQuantity = newStock
-        products[index].isAvailable = newStock > 0
-        return products[index]
-    },
+        this.products[index].stockQuantity = newStock
+        this.products[index].isAvailable = newStock > 0
+        return this.products[index]
+    }
 
     /**
     * 6. Remove um produto pelo ID. Retorna true se removeu, false se não encontrou.
     */
-    delete(id: string): boolean {
-        const index = products.findIndex((product) => product.id === id)
+    async delete(id: string): Promise<boolean> {
+        const index = this.products.findIndex((product) => product.id === id)
         if (index === -1) {
             return false
         }
-        products.splice(index, 1)
+        this.products.splice(index, 1)
         return true
-    },
+    }
 }

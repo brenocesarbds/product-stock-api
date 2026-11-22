@@ -16,15 +16,19 @@ export const productSchema = z.object({
   name: z.string().min(2, 'O nome não pode ser vazio'),
   description: z.string().min(5, 'A descrição não pode ser vazia'),
   price: z.number().positive('Preço inválido'),
-  category: z.enum(CATEGORIES, { message: 'Categoria inválida' }),
+  categoryId: z.string().uuid({ message: 'categoryId deve ser um UUID válido' }),
+  supplierId: z.string().uuid({ message: 'supplierId deve ser um UUID válido' }).nullable().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
   stockQuantity: z.number().int().min(0, 'Quantidade Inválida'),
   isAvailable: z.boolean(),
 })
 
 // 3. Schema para CRIAR um produto: não exigimos o 'id', pois o servidor cria sozinho
 export const createProductSchema = productSchema
-  .omit({ id: true })
+  .omit({ id: true, createdAt: true, updatedAt: true })
   .extend({
+    stockQuantity: z.number().int().min(0, 'Quantidade Inválida').optional(),
     isAvailable: z.boolean().optional(),
   })
 
@@ -32,21 +36,25 @@ export const createProductSchema = productSchema
 export const updateProductSchema = createProductSchema.partial()
 
 // 5. Schema para ATUALIZAR o estoque:
-// 5. Schema para ATUALIZAR o estoque:
 export const updateStockSchema = z.object({
+  type: z.enum(['IN', 'OUT'], {
+    message: "O tipo de movimentação deve ser 'IN' (entrada) ou 'OUT' (saída)",
+  }),
   quantity: z
     .number({ message: 'A quantidade deve ser um número' })
     .int('A quantidade deve ser um número inteiro')
-    .refine((val) => val !== 0, {
-      message: 'A quantidade deve ser diferente de zero (positiva para entrada ou negativa para saída)',
-    }),
+    .positive('A quantidade deve ser maior que zero'),
+  reason: z.string().min(3, 'O motivo deve ter pelo menos 3 caracteres').optional(),
+  userId: z.string().uuid({ message: 'userId deve ser um UUID válido' }),
 })
 
 // 6. Schema para filtrar produtos na listagem via Query Params (ex: ?category=Móveis&price=2024)
 export const listProductsQueriesSchema = z.object({
-  category: z.enum(CATEGORIES).optional(),
+  categoryId: z.string().uuid().optional(),
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
 })
 
 // 6. Tipos inferidos automaticamente pelo Zod:
