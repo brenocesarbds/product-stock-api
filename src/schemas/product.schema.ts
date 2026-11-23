@@ -1,16 +1,6 @@
 import { z } from 'zod'
 
-// 1 Lista de Categorias permitidas
-export const CATEGORIES = [
-  'Eletrônicos',
-  'Vestuário',
-  'Alimentos',
-  'Móveis',
-  'Livros',
-  'Outros',
-] as const
-
-// 2. Schema completo de um Produto cadastrado
+// 1. Schema completo de um Produto cadastrado
 export const productSchema = z.object({
   id: z.string().uuid({ message: 'ID deve ser um UUID válido' }),
   name: z.string().min(2, 'O nome não pode ser vazio'),
@@ -24,7 +14,7 @@ export const productSchema = z.object({
   isAvailable: z.boolean(),
 })
 
-// 3. Schema para CRIAR um produto: não exigimos o 'id', pois o servidor cria sozinho
+// 2. Schema para CRIAR um produto: não exigimos o 'id', pois o servidor cria sozinho
 export const createProductSchema = productSchema
   .omit({ id: true, createdAt: true, updatedAt: true })
   .extend({
@@ -32,10 +22,10 @@ export const createProductSchema = productSchema
     isAvailable: z.boolean().optional(),
   })
 
-// 4. Schema para ATUALIZAR um produto: todos os campos são opcionais (o usuário atualiza só o que quiser)
+// 3. Schema para ATUALIZAR um produto: todos os campos são opcionais (o usuário atualiza só o que quiser)
 export const updateProductSchema = createProductSchema.partial()
 
-// 5. Schema para ATUALIZAR o estoque:
+// 4. Schema para ATUALIZAR o estoque:
 export const updateStockSchema = z.object({
   type: z.enum(['IN', 'OUT'], {
     message: "O tipo de movimentação deve ser 'IN' (entrada) ou 'OUT' (saída)",
@@ -48,7 +38,7 @@ export const updateStockSchema = z.object({
   userId: z.string().uuid({ message: 'userId deve ser um UUID válido' }),
 })
 
-// 6. Schema para filtrar produtos na listagem via Query Params (ex: ?category=Móveis&price=2024)
+// 5. Schema para filtrar produtos na listagem via Query Params (ex: ?category=Móveis&price=2024)
 export const listProductsQueriesSchema = z.object({
   categoryId: z.string().uuid().optional(),
   minPrice: z.coerce.number().min(0).optional(),
@@ -63,3 +53,20 @@ export type CreateProductDTO = z.infer<typeof createProductSchema>
 export type UpdateProductDTO = z.infer<typeof updateProductSchema>
 export type UpdateStockDTO = z.infer<typeof updateStockSchema>
 export type ListProductsQuery = z.infer<typeof listProductsQueriesSchema>
+
+export type Category = {
+  id: string
+  name: string
+  description: string | null
+  createdAt?: Date
+}
+
+export type StockMovement = {
+  id: string
+  type: 'IN' | 'OUT'
+  quantity: number
+  reason: string | null
+  productId: string
+  userId: string
+  createdAt?: Date
+}

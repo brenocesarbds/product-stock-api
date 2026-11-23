@@ -90,8 +90,10 @@ O banco de dados possui 5 tabelas principais modeladas no Prisma:
 | `GET` | `/docs` | Documentação interativa (Swagger UI) | Pública | `200 OK` |
 | `POST` | `/users` | Cadastro de novo usuário | Pública | `201 Created` |
 | `POST` | `/sessions` | Login e geração do token JWT | Pública | `200 OK` |
+| `GET` | `/categories` | Listagem de todas as categorias cadastradas | Pública | `200 OK` |
 | `GET` | `/products` | Listagem de produtos com paginação (`page`, `limit`) e filtros (`categoryId`, `minPrice`, `maxPrice`) | Pública | `200 OK` |
 | `GET` | `/products/:id` | Busca de um produto específico pelo ID | Pública | `200 OK` |
+| `GET` | `/products/:id/movements` | Histórico de entradas e saídas de estoque do produto | Autenticado (`OPERATOR` / `ADMIN`) | `200 OK` |
 | `POST` | `/products` | Cadastro de um novo produto | `ADMIN` | `201 Created` |
 | `PUT` | `/products/:id` | Atualização de dados de um produto | `ADMIN` | `200 OK` |
 | `PATCH` | `/products/:id/stock` | Entrada (`IN`) ou saída (`OUT`) de estoque | Autenticado (`OPERATOR` / `ADMIN`) | `200 OK` |

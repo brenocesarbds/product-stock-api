@@ -1,4 +1,4 @@
-import type { Product, CreateProductDTO, UpdateProductDTO, UpdateStockDTO, ListProductsQuery } from '../schemas/product.schema.js'
+import type { Product, CreateProductDTO, UpdateProductDTO, UpdateStockDTO, ListProductsQuery, Category, StockMovement } from '../schemas/product.schema.js'
 
 export interface IProductRepository {
     findAll(query?: ListProductsQuery): Promise<Product[]>
@@ -12,4 +12,8 @@ export interface IProductRepository {
     updateStock(id: string, data: UpdateStockDTO): Promise<Product | null>
 
     delete(id: string): Promise<boolean>
+
+    findCategories(): Promise<Category[]>
+
+    findMovementsByProductId(productId: string): Promise<StockMovement[]>
 }

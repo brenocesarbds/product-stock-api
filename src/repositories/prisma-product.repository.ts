@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma.js'
 import type { IProductRepository } from './product.repository.interface.js'
-import type { Product, CreateProductDTO, UpdateProductDTO, UpdateStockDTO, ListProductsQuery } from '../schemas/product.schema.js'
+import type { Product, CreateProductDTO, UpdateProductDTO, UpdateStockDTO, ListProductsQuery, Category, StockMovement } from '../schemas/product.schema.js'
 
 export class PrismaProductRepository implements IProductRepository {
     // Método auxiliar privado: converte o Decimal do Prisma para number do JS
@@ -137,6 +137,20 @@ export class PrismaProductRepository implements IProductRepository {
             }),
         ])
         return this.formatProduct(updatedProduct)
+    }
+    // 7. Listar todas as categorias em ordem alfabética
+    async findCategories(): Promise<Category[]> {
+        return prisma.category.findMany({
+            orderBy: { name: 'asc' },
+        })
+    }
+
+    // 8. Listar o histórico de movimentações de um produto (da mais recente para a mais antiga)
+    async findMovementsByProductId(productId: string): Promise<StockMovement[]> {
+        return prisma.stockMovement.findMany({
+            where: { productId },
+            orderBy: { createdAt: 'desc' },
+        })
     }
 }
 

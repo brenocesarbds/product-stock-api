@@ -4,13 +4,17 @@ import type {
     CreateProductDTO,
     UpdateProductDTO,
     UpdateStockDTO,
-    ListProductsQuery
+    ListProductsQuery,
+    Category,
+    StockMovement
 } from '../schemas/product.schema.js'
 
 import type { IProductRepository } from './product.repository.interface.js'
 
 export class InMemoryProductRepository implements IProductRepository {
     private products: Product[] = []
+    private categories: Category[] = []
+    private movements: StockMovement[] = []
 
     /**
     * 1. Lista produtos, aplicando filtros opcionais se fornecidos
@@ -119,5 +123,13 @@ export class InMemoryProductRepository implements IProductRepository {
         }
         this.products.splice(index, 1)
         return true
+    }
+
+    async findCategories(): Promise<Category[]> {
+        return this.categories
+    }
+
+    async findMovementsByProductId(productId: string): Promise<StockMovement[]> {
+        return this.movements.filter((movement) => movement.productId === productId)
     }
 }

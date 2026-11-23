@@ -173,4 +173,34 @@ export async function productsRoutes(app: FastifyInstance) {
         // 204 No Content: Deu tudo certo, e não precisa enviar corpo de resposta
         return reply.status(204).send();
     })
+    /**
+   * 7. GET /categories -> Listar todas as categorias disponíveis
+   */
+    app.get('/categories', async (request, reply) => {
+        const categories = await productRepository.findCategories()
+        return reply.status(200).send(categories)
+    })
+
+    /**
+     * 8. GET /products/:id/movements -> Consultar histórico de movimentações de um produto
+     */
+    app.get('/products/:id/movements', { onRequest: [verifyJwt] }, async (request, reply) => {
+        const paramsValidation = paramsSchema.safeParse(request.params)
+        if (!paramsValidation.success) {
+            return reply.status(400).send({
+                message: 'Parâmetro de rota inválido',
+                errors: paramsValidation.error.flatten().fieldErrors,
+            })
+        }
+
+        const { id } = paramsValidation.data
+        const product = await productRepository.findById(id)
+
+        if (!product) {
+            return reply.status(404).send({ message: 'Produto não encontrado' })
+        }
+
+        const movements = await productRepository.findMovementsByProductId(id)
+        return reply.status(200).send(movements)
+    })
 }
