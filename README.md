@@ -4,6 +4,12 @@ API REST desenvolvida com Node.js, Fastify e TypeScript para gerenciamento de ca
 
 O projeto começou como um CRUD em memória e foi evoluído para utilizar banco de dados relacional (PostgreSQL com Prisma ORM), autenticação via JWT com controle de permissões por perfil de usuário (RBAC), testes automatizados com Vitest e documentação com Swagger.
 
+### Deploy em Produção (Render + Neon PostgreSQL)
+- **Documentação Interativa (Swagger UI):** [https://product-stock-api.onrender.com/docs](https://product-stock-api.onrender.com/docs)
+- **Endpoint de Produtos (`GET /products`):** [https://product-stock-api.onrender.com/products](https://product-stock-api.onrender.com/products)
+- **Endpoint de Categorias (`GET /categories`):** [https://product-stock-api.onrender.com/categories](https://product-stock-api.onrender.com/categories)
+- *(Nota: como a API está hospedada no plano gratuito do Render, a primeira requisição após um período de inatividade pode levar cerca de 30 a 50 segundos para inicializar o container).*
+
 ---
 
 ## Tecnologias Utilizadas
